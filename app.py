@@ -5,7 +5,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 
 # -----------------------------
-# Page Config (IMPORTANT for LinkedIn screenshots)
+# Page configuration
 # -----------------------------
 st.set_page_config(
     page_title="Customer Support Chatbot",
@@ -16,14 +16,8 @@ st.set_page_config(
 # -----------------------------
 # Title
 # -----------------------------
-st.markdown(
-    "<h1 style='text-align: center;'>🤖 Customer Support Chatbot</h1>",
-    unsafe_allow_html=True
-)
-st.markdown(
-    "<p style='text-align: center; color: gray;'>AI-powered chatbot using NLP & Machine Learning</p>",
-    unsafe_allow_html=True
-)
+st.title("🤖 Customer Support Chatbot")
+st.write("AI-powered chatbot using NLP and Machine Learning")
 st.divider()
 
 # -----------------------------
@@ -55,7 +49,7 @@ data = {
 df = pd.DataFrame(data)
 
 # -----------------------------
-# Preprocessing
+# Text Preprocessing
 # -----------------------------
 def preprocess(text):
     text = text.lower()
@@ -65,12 +59,15 @@ def preprocess(text):
 df["question"] = df["question"].apply(preprocess)
 
 # -----------------------------
-# Vectorization & Model
+# Vectorization
 # -----------------------------
 vectorizer = TfidfVectorizer()
 X = vectorizer.fit_transform(df["question"])
 y = df["intent"]
 
+# -----------------------------
+# Train Model
+# -----------------------------
 model = LogisticRegression()
 model.fit(X, y)
 
@@ -78,13 +75,31 @@ model.fit(X, y)
 # Responses
 # -----------------------------
 responses = {
-    "password_reset": "You can reset your password using the **Forgot Password** option.",
-    "refund": "Our refund policy allows refunds within **7 days of purchase**.",
-    "contact_support": "You can contact customer support via **email or live chat**.",
-    "order_tracking": "Please provide your **order ID** to track your order."
+    "password_reset": "You can reset your password using the 'Forgot Password' option.",
+    "refund": "Our refund policy allows refunds within 7 days of purchase.",
+    "contact_support": "You can contact customer support via email or live chat.",
+    "order_tracking": "Please provide your order ID to track your order."
 }
 
 # -----------------------------
-# Chatbot Logic
+# Chatbot Function (FIXED)
 # -----------------------------
 def chatbot_reply(user_input):
+    user_input = preprocess(user_input)
+    vector = vectorizer.transform([user_input])
+    intent = model.predict(vector)[0]
+    return responses.get(
+        intent,
+        "Sorry, I didn't understand that. Please contact support."
+    )
+
+# -----------------------------
+# Streamlit UI
+# -----------------------------
+user_input = st.text_input("Ask your question:")
+
+if user_input:
+    st.success(f"🤖 Bot: {chatbot_reply(user_input)}")
+
+st.divider()
+st.caption("Built using Python, NLP, and Machine Learning")
